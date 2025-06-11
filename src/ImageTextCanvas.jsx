@@ -24,7 +24,8 @@ function ImageTextCanvas() {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    if (!/^image\/(png|jpeg)$/.test(file.type)) {
+    // Accept both jpg and jpeg MIME types along with png
+    if (!/^image\/(png|jpe?g)$/.test(file.type)) {
       alert('Please upload a PNG or JPEG image.');
       return;
     }
