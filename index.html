@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lamina Image Editor</title>
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    canvas {
+      margin-top: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function App() {
+      const canvasRef = React.useRef(null);
+      const [image, setImage] = React.useState(null);
+      const [text, setText] = React.useState('');
+      const [fontSize, setFontSize] = React.useState(24);
+      const [color, setColor] = React.useState('#000000');
+      const [textX, setTextX] = React.useState(20);
+      const [textY, setTextY] = React.useState(20);
+
+      React.useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.font = `${fontSize}px sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textBaseline = 'top';
+        ctx.fillText(text, textX, textY);
+
+        if (image) {
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        }
+      }, [image, text, fontSize, color, textX, textY]);
+
+      const handleUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const img = new Image();
+        img.onload = () => {
+          setImage(img);
+          const canvas = canvasRef.current;
+          canvas.width = img.width;
+          canvas.height = img.height;
+        };
+        img.src = URL.createObjectURL(file);
+      };
+
+      return (
+        <div>
+          <h1>Lamina Image Editor</h1>
+          <div>
+            <input type="file" accept="image/*" onChange={handleUpload} />
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Enter text"
+              value={text}
+              onChange={e => setText(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>
+              Font size:
+              <input
+                type="number"
+                value={fontSize}
+                onChange={e => setFontSize(parseInt(e.target.value) || 0)}
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Color:
+              <input
+                type="color"
+                value={color}
+                onChange={e => setColor(e.target.value)}
+              />
+            </label>
+          </div>
+          <div>
+            <label>
+              Text X:
+              <input
+                type="number"
+                value={textX}
+                onChange={e => setTextX(parseInt(e.target.value) || 0)}
+              />
+            </label>
+            <label style={{ marginLeft: '10px' }}>
+              Text Y:
+              <input
+                type="number"
+                value={textY}
+                onChange={e => setTextY(parseInt(e.target.value) || 0)}
+              />
+            </label>
+          </div>
+          <div style={{ marginTop: '10px' }}>
+            <button onClick={() => {
+              const canvas = canvasRef.current;
+              const link = document.createElement('a');
+              link.download = 'image.png';
+              link.href = canvas.toDataURL();
+              link.click();
+            }}>Download</button>
+          </div>
+          <canvas ref={canvasRef} width="500" height="500"></canvas>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
